@@ -3,6 +3,7 @@ import * as SQLite from "expo-sqlite";
 
 const dbPromise = SQLite.openDatabaseAsync("music_app.db");
 
+// Main data
 export const createSongsTable = async () => {
   try {
     const db = await dbPromise;
@@ -20,7 +21,14 @@ export const createSongsTable = async () => {
           isLiked INTEGER DEFAULT 0
         );
       `);
-    console.log("Table 'songsData' created successfully");
+    await db.execAsync(`CREATE TABLE IF NOT EXISTS playlist (
+        id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+        playlistName TEXT NOT NULL UNIQUE
+      );`);
+    await db.runAsync(
+      `CREATE TABLE IF NOT EXISTS playlistData (playlistId INTEGER, songId TEXT);`
+    );
+    console.log("Tables created successfully");
   } catch (error) {
     console.error("Error creating table 'songsData':", error);
   }
@@ -81,6 +89,7 @@ export const getSongDataById = async (songId: string) => {
   }
 };
 
+// Liked track data
 export const toggleLikedTrack = async (trackId: string) => {
   const db = await dbPromise;
   try {
@@ -105,5 +114,66 @@ export const getAllLikedSongData = async () => {
     return data;
   } catch (error) {
     console.log("Error fetching all songs data!!! ", error);
+  }
+};
+
+// Plalists data
+
+export const insertIntoPlaylist = async (playlistName: string) => {
+  const db = await dbPromise;
+  try {
+    await db.runAsync(`INSERT INTO playlist (playlistName) VALUES (?)`, [
+      playlistName,
+    ]);
+
+    console.log(`${playlistName} inserted successfully`);
+  } catch (error) {
+    console.log(`Error inserting ${playlistName}: ${error}`);
+  }
+};
+
+export const getAllPlaylits = async () => {
+  const db = await dbPromise;
+  try {
+    const data: string[] = await db.getAllAsync("SELECT * FROM playlist");
+    console.log(`Playlist data length: ${data.length}`);
+    return data as string[];
+  } catch (error) {
+    console.log("Error fetching all playlists!!! ", error);
+  }
+};
+
+export const insertIntoPlaylistTable = async (
+  playlist_id: number,
+  trackId: string
+) => {
+  const db = await dbPromise;
+
+  try {
+    await db.runAsync(
+      "INSERT INTO playlistData (playlistId, songId) VALUES (?, ?)",
+      [playlist_id, trackId]
+    );
+    console.log(
+      `Track ${trackId} inserted into playlist ${playlist_id} successfully`
+    );
+  } catch (error) {
+    console.log(
+      `Error inserting ${trackId} into playlist ${playlist_id}: ${error}`
+    );
+  }
+};
+
+export const getAllTracksFromPlaylist = async (playlist_id: number) => {
+  const db = await dbPromise;
+  try {
+    const data: songMetaData[] = await db.getAllAsync(
+      "SELECT * FROM songsData JOIN playlistData ON songsData.songId = playlistData.songId WHERE playlistData.playlistId = ?",
+      [playlist_id]
+    );
+    console.log(`Playlist ${playlist_id} data length: ${data.length}`);
+    return data;
+  } catch (error) {
+    console.log("Error fetching all tracks from playlist!!! ", error);
   }
 };

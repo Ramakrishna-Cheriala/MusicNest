@@ -30,13 +30,13 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
 
-    const setupTrackPlayer = async () => {
-      console.log("start...");
-      await initializePlayer();
-      TrackPlayer.registerPlaybackService(() => require("@/service"));
-    };
+    // const setupTrackPlayer = async () => {
+    //   console.log("start...");
+    //   await initializePlayer();
+    //   TrackPlayer.registerPlaybackService(() => require("@/service"));
+    // };
 
-    setupTrackPlayer();
+    // setupTrackPlayer();
   }, [loaded]);
 
   if (!loaded) {

@@ -17,7 +17,12 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons";
 import MusicInfo from "@/lib/MusicInfo";
-import { getSongDataById, toggleLikedTrack } from "@/Database/db";
+import {
+  getAllPlaylits,
+  getSongDataById,
+  toggleLikedTrack,
+} from "@/Database/db";
+import Playlists from "./Playlists";
 
 type OptionsModalProps = {
   isVisible: boolean;
@@ -34,6 +39,9 @@ const TrackOptions: React.FC<OptionsModalProps> = ({
   const [pictureData, setPictureData] = useState<string>();
   const [trackData, setTrackData] = useState<songMetaData>();
   const [isLikedToggled, setIsLikedToggled] = useState(false); // New state for tracking like toggle
+  const [playlists, setPlaylists] = useState<
+    { id: number; playlistName: string }[]
+  >([]);
 
   // PanResponder to detect dragging
   const panResponder = React.useRef(
@@ -52,6 +60,7 @@ const TrackOptions: React.FC<OptionsModalProps> = ({
   const handleLikedTracks = async (id: string) => {
     await toggleLikedTrack(id);
     setIsLikedToggled((prev) => !prev); // Toggle the state to trigger useEffect
+    onClose();
   };
 
   useEffect(() => {
@@ -161,9 +170,7 @@ const TrackOptions: React.FC<OptionsModalProps> = ({
                 <TouchableOpacity
                   className="py-2 mt-3"
                   onPress={() => {
-                    // setAddToPlaylist(true);
-                    console.log("clicked handle playlist");
-                    // onClose();
+                    setAddToPlaylist(true);
                   }}
                 >
                   <View className="flex flex-row items-center pb-3 border-b border-gray-600">
@@ -220,6 +227,12 @@ const TrackOptions: React.FC<OptionsModalProps> = ({
           </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
+      <Playlists
+        isVisible={addToPlaylist}
+        onClose={() => setAddToPlaylist(false)}
+        trackId={track.songId}
+        // playlists={playlists}
+      />
     </Modal>
   );
 };

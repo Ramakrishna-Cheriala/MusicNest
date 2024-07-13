@@ -38,8 +38,8 @@ const SongScreen: React.FC = () => {
     const initialSteps = async () => {
       await createSongsTable();
       // initializePlayer();
-      await TrackPlayer.setupPlayer();
-      console.log("set up successful..");
+      // await TrackPlayer.setupPlayer();
+      // console.log("set up successful..");
       // const data = await getAllSongData();
       // if (data && data.length > 0) {
       //   setDbData(data);

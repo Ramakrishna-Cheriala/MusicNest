@@ -46,7 +46,7 @@ const PlaylistData = () => {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true); // Start refreshing indicator
-    fetchPlayListData(1);
+    fetchPlayListData(playlist.id);
   }, []);
 
   const handleDelete = async (songId: string) => {};

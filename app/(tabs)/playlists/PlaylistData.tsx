@@ -9,10 +9,16 @@ import {
 } from "react-native";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import Song from "@/app/Songs";
-import { getAllTracksFromPlaylist } from "@/Database/db";
-import { songMetaData } from "@/lib/types";
+import {
+  deleteTrackFromPlaylist,
+  getAllTracksFromPlaylist,
+} from "@/Database/db";
+import { songMetaData, TrackData } from "@/lib/types";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import Search from "@/components/Search";
+import { addTracksToQueue } from "@/lib/utils";
+import Buttons from "@/components/Buttons";
 
 const PlaylistData = () => {
   const route = useRoute();
@@ -23,6 +29,9 @@ const PlaylistData = () => {
     []
   );
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [filteredTracks, setFilteredTracks] = useState<TrackData[] | undefined>(
+    []
+  );
 
   const { playlist } = route.params as {
     playlist: { id: number; playlistName: string };
@@ -36,6 +45,7 @@ const PlaylistData = () => {
     try {
       const data = await getAllTracksFromPlaylist(playListId);
       setPlaylistData(data);
+      // console.log(data);
     } catch (error) {
       console.log(error);
     } finally {
@@ -46,10 +56,14 @@ const PlaylistData = () => {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true); // Start refreshing indicator
-    fetchPlayListData(1);
+    fetchPlayListData(playlist.id);
   }, []);
 
-  const handleDelete = async (songId: string) => {};
+  const handleDelete = async (songId: string | undefined) => {
+    await deleteTrackFromPlaylist(playlist.id, songId);
+    const data = playlistData?.filter((item) => item.songId !== songId);
+    setPlaylistData(data);
+  };
 
   return (
     <SafeAreaView>
@@ -65,26 +79,35 @@ const PlaylistData = () => {
             {playlist.playlistName}
           </Text>
         </View>
-        {/* <Search
+        <Search
           mainData={playlistData}
           onResults={setFilteredTracks}
-          placeholder={`Search ${playlist.replace(".json", "")}...`}
+          placeholder={`Search ${playlist.playlistName}...`}
         />
-        <Buttons mainData={playlistData} /> */}
+        <Buttons
+          //@ts-ignore
+          mainData={playlistData}
+          idType="songId"
+        />
         <FlatList
-          // data={filteredTracks.length > 0 ? filteredTracks : playlistData}
-          data={playlistData}
+          data={filteredTracks}
           keyExtractor={(item, index) => `${index}`}
           renderItem={({ item }) => (
             <View className="flex flex-row">
               <View className="w-[90%]">
                 <MemoizedSong
                   data={item}
-                  onclick={() => {
+                  onclick={async (data: songMetaData) => {
                     console.log(
                       "------------------------------------------------"
                     );
-                    console.log(`clicked on ${item.filename}`);
+                    console.log(`clicked on ${data.filename}`);
+                    const songIndex = playlistData?.findIndex(
+                      (song) => song.id === item.id
+                    );
+                    console.log(songIndex);
+                    //@ts-ignore
+                    await addTracksToQueue(playlistData, songIndex, "songId");
                     console.log(
                       "------------------------------------------------"
                     );
@@ -93,6 +116,7 @@ const PlaylistData = () => {
               </View>
               <TouchableOpacity
                 className="flex justify-center items-center"
+                //@ts-ignore
                 onPress={() => handleDelete(item.songId)}
               >
                 <Ionicons

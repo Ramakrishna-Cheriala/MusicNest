@@ -14,6 +14,7 @@ import {
   getAllPlaylits,
   insertIntoPlaylist,
   getAllTracksFromPlaylist,
+  deletePlaylist,
 } from "@/Database/db";
 import { songMetaData } from "@/lib/types";
 
@@ -72,6 +73,9 @@ const PlayListScreen = () => {
 
   const handleDelete = async (playlistId: number) => {
     // Implement delete logic here
+    await deletePlaylist(playlistId);
+    const data = playlists.filter((playlist) => playlist.id !== playlistId);
+    setPlaylists(data);
   };
 
   const renderPlaylistItem = ({

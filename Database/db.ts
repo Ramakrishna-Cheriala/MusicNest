@@ -111,7 +111,8 @@ export const getAllLikedSongData = async () => {
       "SELECT * FROM songsData WHERE isLiked = 1"
     );
     console.log(`liked Songs data length: ${data.length}`);
-    return data;
+    // console.log(data);
+    return data as songMetaData[];
   } catch (error) {
     console.log("Error fetching all songs data!!! ", error);
   }
@@ -175,5 +176,40 @@ export const getAllTracksFromPlaylist = async (playlist_id: number) => {
     return data;
   } catch (error) {
     console.log("Error fetching all tracks from playlist!!! ", error);
+  }
+};
+
+export const deletePlaylist = async (playlistId: number) => {
+  const db = await dbPromise;
+  try {
+    await db.runAsync("DELETE FROM playlist WHERE id = ?", [playlistId]);
+    console.log("Playlist deleted successfully from playlist table");
+    await db.runAsync("DELETE FROM playlistData WHERE playlistId = ?", [
+      playlistId,
+    ]);
+    console.log("Tracks deleted successfully from playlistData table");
+  } catch (error) {
+    console.log(`Error deleting playlist ${playlistId}: ${error}`);
+  }
+};
+
+export const deleteTrackFromPlaylist = async (
+  platlistId: number,
+  trackId: string | undefined
+) => {
+  const db = await dbPromise;
+  try {
+    if (!trackId) return;
+    await db.runAsync(
+      "DELETE FROM playlistData WHERE playlistId = ? AND songId = ?",
+      [platlistId, trackId]
+    );
+    console.log(
+      `Track ${trackId} deleted successfully from playlist ${platlistId}`
+    );
+  } catch (error) {
+    console.log(
+      `Error deleting track ${trackId} from playlist ${platlistId}: ${error}`
+    );
   }
 };

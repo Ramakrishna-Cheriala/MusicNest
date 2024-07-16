@@ -1,4 +1,4 @@
-import { songMetaData } from "@/lib/types";
+import { songMetaData, TrackData } from "@/lib/types";
 // import { useMusicPlayer } from "./MusicProvider";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -6,14 +6,20 @@ import { useState } from "react";
 import TrackOptions from "@/components/TrackOptions";
 import { colors } from "@/constants/tokens";
 
-const Song = ({ data, onclick }: { data: songMetaData; onclick: Function }) => {
+const Song = ({
+  data,
+  onclick,
+}: {
+  data: songMetaData | TrackData;
+  onclick: Function;
+}) => {
   // console.log(`rendering songs ${data.title} - ${data.album}`);
   // console.log("------------------------");
   const [selectedTrack, setSelectedTrack] = useState<
-    songMetaData | undefined
+    songMetaData | TrackData
   >();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  const handlePress = (data: songMetaData) => {
+  const handlePress = (data: songMetaData | TrackData) => {
     //   setCurrentTrack(data);
     onclick(data);
   };
@@ -64,13 +70,13 @@ const Song = ({ data, onclick }: { data: songMetaData; onclick: Function }) => {
           >
             {data?.artist || "Unknown Artist"}
           </Text>
-          <Text
+          {/* <Text
             className="text-gray-500 text-sm"
             numberOfLines={1}
             ellipsizeMode="tail"
           >
             {data?.album || "Unknown Album"}
-          </Text>
+          </Text> */}
         </View>
         <TouchableOpacity
           onPress={showOptions}

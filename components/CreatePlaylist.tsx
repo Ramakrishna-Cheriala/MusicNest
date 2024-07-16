@@ -33,19 +33,20 @@ const CreatePlaylist: React.FC<CreatePlaylistProps> = ({
   }, []);
 
   const handleCreatePlaylist = async () => {
+    console.log("in handle create playlist");
     // let state = false
     if (newPlaylistName.trim() === "") {
       alert("Please enter a valid playlist name.");
       return;
     }
-    existingPlaylists.map((playlist) => {
-      if (playlist.playlistName === newPlaylistName.trim()) {
-        setIsExisting(true);
-      }
+
+    const index = existingPlaylists.findIndex((playlist) => {
+      playlist.playlistName = newPlaylistName.replace(/\s+/g, "_");
     });
 
-    if (isExisting) {
+    if (index > 0) {
       alert("Playlist name already exists.");
+      console.log("Playlist name already exists.");
     } else {
       try {
         const safePlaylistName = newPlaylistName.replace(/\s+/g, "_");

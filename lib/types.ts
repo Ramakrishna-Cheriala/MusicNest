@@ -1,4 +1,7 @@
+import * as MediaLibrary from "expo-media-library";
+
 export type songMetaData = {
+  id?: number;
   songId: string;
   title: string;
   artist: string;
@@ -21,3 +24,5 @@ export type dbData = {
   filename: string;
   isLiked: boolean;
 };
+
+export type TrackData = MediaLibrary.Asset | songMetaData;

@@ -11,7 +11,7 @@ import {
 import { colors } from "@/constants/tokens";
 import { BlurView } from "expo-blur";
 import { SafeAreaView } from "react-native-safe-area-context";
-// import { FloatingPlayer } from "@/components/FloatingPlayer";
+import { FloatingPlayer } from "@/components/FloatingPlayer";
 // import useCurrentTrack from "@/hooks/useCurrentTrack";
 
 export default function TabLayout() {
@@ -159,9 +159,9 @@ export default function TabLayout() {
             }}
           />
         </Tabs>
-        {/* <View className="absolute bottom-[74px] w-full">
+        <View className="absolute bottom-[74px] w-full">
           <FloatingPlayer />
-        </View> */}
+        </View>
       </View>
       {/* Floating Player */}
     </SafeAreaView>

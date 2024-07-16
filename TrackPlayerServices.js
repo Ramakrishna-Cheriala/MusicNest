@@ -4,6 +4,7 @@ export const initializePlayer = async () => {
   try {
     console.log("Initializing TrackPlayer...");
     await TrackPlayer.setupPlayer();
+
     console.log("TrackPlayer initialized successfully");
     await TrackPlayer.updateOptions({
       capabilities: [

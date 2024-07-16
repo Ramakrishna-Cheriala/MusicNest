@@ -23,11 +23,12 @@ import {
   toggleLikedTrack,
 } from "@/Database/db";
 import Playlists from "./Playlists";
+import { Track } from "react-native-track-player";
 
 type OptionsModalProps = {
   isVisible: boolean;
   onClose: () => void;
-  track: songMetaData | undefined;
+  track: songMetaData | Track | undefined;
 };
 
 const TrackOptions: React.FC<OptionsModalProps> = ({
@@ -227,12 +228,14 @@ const TrackOptions: React.FC<OptionsModalProps> = ({
           </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
-      <Playlists
-        isVisible={addToPlaylist}
-        onClose={() => setAddToPlaylist(false)}
-        trackId={track.songId}
-        // playlists={playlists}
-      />
+      {addToPlaylist && (
+        <Playlists
+          isVisible={addToPlaylist}
+          onClose={() => setAddToPlaylist(false)}
+          trackId={track.songId}
+          // playlists={playlists}
+        />
+      )}
     </Modal>
   );
 };

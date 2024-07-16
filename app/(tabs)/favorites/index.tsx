@@ -8,12 +8,18 @@ import {
 import React, { memo, useCallback, useEffect, useState } from "react";
 import Song from "@/app/Songs";
 import { getAllLikedSongData } from "@/Database/db";
-import { songMetaData } from "@/lib/types";
+import { songMetaData, TrackData } from "@/lib/types";
+import Search from "@/components/Search";
+import { addTracksToQueue } from "@/lib/utils";
+import Buttons from "@/components/Buttons";
 
 const FavoritesScreen = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [likedData, setLikedData] = useState<songMetaData[] | undefined>([]);
+  const [likedData, setLikedData] = useState<TrackData[] | undefined>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [filteredTracks, setFilteredTracks] = useState<TrackData[] | undefined>(
+    []
+  );
 
   useEffect(() => {
     fetchLikedData();
@@ -45,19 +51,37 @@ const FavoritesScreen = () => {
           className="flex justify-center items-center"
         />
       ) : (
-        <>
+        <View className="w-full h-full m-0 mb-16">
+          <Search
+            mainData={likedData}
+            searchTitleOnly={true}
+            onResults={setFilteredTracks}
+            placeholder="Search songs..."
+          />
+
+          <Buttons
+            // @ts-ignore
+            mainData={likedData}
+            idType="songId"
+          />
           <FlatList
-            data={likedData}
+            data={filteredTracks}
             // renderItem={renderSongItem}
-            keyExtractor={(item) => item.songId}
+            keyExtractor={(item) => item.filename}
             renderItem={({ item }) => (
               <MemoizedSong
                 data={item}
-                onclick={() => {
+                onclick={async (data: songMetaData) => {
                   console.log(
                     "------------------------------------------------"
                   );
-                  console.log(`clicked on ${item.filename}`);
+                  console.log(`clicked on ${data.filename}`);
+                  const songIndex = likedData?.findIndex(
+                    (song) => song.id === item.id
+                  );
+                  console.log(songIndex);
+                  //@ts-ignore
+                  await addTracksToQueue(likedData, songIndex, "songId");
                   console.log(
                     "------------------------------------------------"
                   );
@@ -66,7 +90,7 @@ const FavoritesScreen = () => {
             )}
             ListEmptyComponent={() => {
               return (
-                <View className="flex items-center justify-center bg-slate-500">
+                <View className="flex items-center justify-center">
                   <Text className="text-white text-3xl text-center">
                     No Liked Songs
                   </Text>
@@ -77,7 +101,7 @@ const FavoritesScreen = () => {
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
           />
-        </>
+        </View>
       )}
     </View>
   );

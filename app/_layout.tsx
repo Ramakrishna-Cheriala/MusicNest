@@ -26,17 +26,19 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
+    const setupTrackPlayer = async () => {
+      console.log("start...");
+      await initializePlayer();
+      TrackPlayer.registerPlaybackService(() => require("@/service"));
+    };
+
+    setupTrackPlayer();
+  }, []);
+
+  useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
     }
-
-    // const setupTrackPlayer = async () => {
-    //   console.log("start...");
-    //   await initializePlayer();
-    //   TrackPlayer.registerPlaybackService(() => require("@/service"));
-    // };
-
-    // setupTrackPlayer();
   }, [loaded]);
 
   if (!loaded) {

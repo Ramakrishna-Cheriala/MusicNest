@@ -12,7 +12,7 @@ import * as MediaLibrary from "expo-media-library";
 import MusicInfo from "@/lib/MusicInfo";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 // import * as FileSystem from "expo-file-system";
-import { songMetaData } from "@/lib/types";
+import { songMetaData, TrackData } from "@/lib/types";
 import {
   createSongsTable,
   getAllSongData,
@@ -27,26 +27,26 @@ import {
   playTrack,
   initializePlayer,
 } from "@/TrackPlayerServices.js";
-import TrackPlayer from "react-native-track-player";
+import TrackPlayer, {
+  Event,
+  useTrackPlayerEvents,
+} from "react-native-track-player";
+import Search from "@/components/Search";
+import { addTracksToQueue } from "@/lib/utils";
+import Buttons from "@/components/Buttons";
 
 const SongScreen: React.FC = () => {
   const [songs, setSongs] = useState<MediaLibrary.Asset[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [dbData, setDbData] = useState<songMetaData[] | undefined>([]);
+  const [isTrackActive, setIsTrackActive] = useState<boolean>(false);
+  const [filteredTracks, setFilteredTracks] = useState<TrackData[] | undefined>(
+    []
+  );
 
   useEffect(() => {
     const initialSteps = async () => {
       await createSongsTable();
-      // initializePlayer();
-      // await TrackPlayer.setupPlayer();
-      // console.log("set up successful..");
-      // const data = await getAllSongData();
-      // if (data && data.length > 0) {
-      //   setDbData(data);
-      //   console.log(data.length);
-      // } else {
-      //   console.log("No song data in database!!");
-      // }
     };
     initialSteps();
   }, []);
@@ -93,34 +93,45 @@ const SongScreen: React.FC = () => {
   // };
 
   return (
-    <View className="m-0 mb-20">
+    <View className={`m-0 ${isTrackActive ? "mb-[350px]" : "mb-72"}`}>
       {isLoading ? (
         <ActivityIndicator size="large" color="#00ff00" />
       ) : (
-        <FlatList
-          data={songs}
-          // renderItem={renderSongItem}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <MemoizedSong
-              data={item}
-              onclick={async (data: songMetaData) => {
-                console.log("------------------------------------------------");
-                console.log(`clicked on ${data.filename}`);
-                // await addTrack({
-                //   id: data.songId,
-                //   url: data.uri,
-                //   title: data.title,
-                //   artist: data.artist,
-                //   artwork: data.pictureData,
-                //   duration: data.duration,
-                // });
-                // await playTrack();
-                console.log("------------------------------------------------");
-              }}
-            />
-          )}
-        />
+        <View>
+          <Search
+            mainData={songs}
+            searchTitleOnly={true}
+            onResults={setFilteredTracks}
+            placeholder="Search songs..."
+          />
+          <Buttons mainData={songs} idType="id" />
+          <FlatList
+            data={filteredTracks}
+            // renderItem={renderSongItem}
+            keyExtractor={(item) => item.filename}
+            renderItem={({ item }) => (
+              <MemoizedSong
+                data={item}
+                onclick={async (data: songMetaData) => {
+                  console.log(
+                    "------------------------------------------------"
+                  );
+                  setIsTrackActive(true);
+                  console.log(`clicked on ${data.filename}`);
+                  const songIndex = songs.findIndex(
+                    (song) => song.id === item.id
+                  );
+                  console.log(songIndex);
+                  // await playTrack();
+                  await addTracksToQueue(songs, songIndex, "id");
+                  console.log(
+                    "------------------------------------------------"
+                  );
+                }}
+              />
+            )}
+          />
+        </View>
       )}
     </View>
   );
@@ -129,7 +140,7 @@ const SongScreen: React.FC = () => {
 export default SongScreen;
 
 const Song = memo(
-  ({ data, onclick }: { data: MediaLibrary.Asset; onclick: Function }) => {
+  ({ data, onclick }: { data: TrackData; onclick: Function }) => {
     const [metadata, setMetadata] = useState<songMetaData | undefined>();
     const [selectedTrack, setSelectedTrack] = useState<
       songMetaData | undefined
@@ -253,13 +264,13 @@ const Song = memo(
             >
               {metadata?.artist || "Unknown Artist"}
             </Text>
-            <Text
+            {/* <Text
               className="text-gray-500 text-sm"
               numberOfLines={1}
               ellipsizeMode="tail"
             >
               {metadata?.album || "Unknown Album"}
-            </Text>
+            </Text> */}
           </View>
           <TouchableOpacity
             onPress={() => showOptions(metadata)}

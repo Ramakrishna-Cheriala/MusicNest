@@ -38,6 +38,7 @@ const Playlists: React.FC<OptionsModalProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedPlaylist, setSelectedPlaylist] = useState<string>("");
   const [isExisting, setIsExisting] = useState<boolean>(false);
+  const [createModalVisible, setCreateModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchPlaylists = async () => {
@@ -61,15 +62,6 @@ const Playlists: React.FC<OptionsModalProps> = ({
     console.log(id);
     try {
       const tracks = await getAllTracksFromPlaylist(id);
-      //   if (tracks && tracks?.length > 0) {
-      //     tracks.forEach((track) => {
-      //       if (track.songId === trackId) {
-      //         console.log("song exists", trackId);
-      //         setIsExisting(true);
-      //         console.log(isExisting);
-      //       }
-      //     });
-      //   }
       const index = tracks?.findIndex((track) => track.songId === trackId);
       console.log("Song index: ", index);
       if (index !== -1) {
@@ -87,13 +79,18 @@ const Playlists: React.FC<OptionsModalProps> = ({
   };
 
   const handleCreatePlaylist = async (playlistName: string) => {
-    await insertIntoPlaylist(playlistName);
-    // setModalVisible(false);
-    setPlaylists((prevPlaylists) => [
-      ...prevPlaylists,
-      { id: prevPlaylists.length + 1, playlistName: playlistName },
-    ]);
-    onClose();
+    try {
+      await insertIntoPlaylist(playlistName);
+      // setModalVisible(false);
+      setPlaylists((prevPlaylists) => [
+        ...prevPlaylists,
+        { id: prevPlaylists.length + 1, playlistName: playlistName },
+      ]);
+    } catch (error) {
+      console.log("Error creating playlist: ", error);
+    } finally {
+      //   setCreateModalVisible(false);
+    }
   };
 
   return (
@@ -111,14 +108,14 @@ const Playlists: React.FC<OptionsModalProps> = ({
               <ActivityIndicator size="large" color="#fff" />
             ) : (
               <>
-                {/* <TouchableOpacity
+                <TouchableOpacity
                   className="bg-blue-500 p-3 rounded-lg mb-4 ml-2 mr-2"
                   onPress={() => setCreateModalVisible(true)}
                 >
                   <Text className="text-white text-center">
                     Create Playlist
                   </Text>
-                </TouchableOpacity> */}
+                </TouchableOpacity>
                 <FlatList
                   data={playlists}
                   keyExtractor={(item) => item.id.toString()}
@@ -152,26 +149,26 @@ const Playlists: React.FC<OptionsModalProps> = ({
                     );
                   }}
                 />
+                <View className="flex justify-center items-center">
+                  <TouchableOpacity
+                    className="bg-red-500 p-3 rounded-lg w-[50%]"
+                    onPress={onClose}
+                  >
+                    <Text className="text-white text-center">Cancel</Text>
+                  </TouchableOpacity>
+                </View>
               </>
             )}
-            <View className="flex justify-center items-center">
-              <TouchableOpacity
-                className="bg-red-500 p-3 rounded-lg w-[50%]"
-                onPress={onClose}
-              >
-                <Text className="text-white text-center">Cancel</Text>
-              </TouchableOpacity>
-            </View>
           </View>
         </View>
       </Modal>
 
       {/* Create Playlist Modal */}
-      {/* <CreatePlaylist
+      <CreatePlaylist
         modalVisible={createModalVisible}
         setModalVisible={setCreateModalVisible}
         onCreate={handleCreatePlaylist}
-      /> */}
+      />
     </>
   );
 };

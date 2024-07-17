@@ -213,3 +213,32 @@ export const deleteTrackFromPlaylist = async (
     );
   }
 };
+
+export const getTracksByAlbumName = async (albumName: string) => {
+  const db = await dbPromise;
+  try {
+    const data: songMetaData[] = await db.getAllAsync(
+      "SELECT * FROM songsData WHERE album = ?",
+      [albumName]
+    );
+    console.log(`Album ${albumName} data length: ${data.length}`);
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log("Error fetching all tracks from album!!! ", error);
+  }
+};
+
+export const getTracksByArtists = async (artist: string) => {
+  const db = await dbPromise;
+  try {
+    const data: songMetaData[] = await db.getAllAsync(
+      "SELECT * FROM songsData WHERE artist LIKE ?",
+      [`%${artist}%`]
+    );
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log("Error fetching all tracks by artist!!! ", error);
+  }
+};

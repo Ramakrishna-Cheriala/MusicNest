@@ -13,6 +13,7 @@ import { songMetaData } from "@/lib/types";
 import {
   AntDesign,
   FontAwesome,
+  FontAwesome6,
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
@@ -23,7 +24,8 @@ import {
   toggleLikedTrack,
 } from "@/Database/db";
 import Playlists from "./Playlists";
-import { Track } from "react-native-track-player";
+import TrackPlayer, { Track } from "react-native-track-player";
+import ArtistAndAlbum from "./ArtistAndAlbum";
 
 type OptionsModalProps = {
   isVisible: boolean;
@@ -37,6 +39,8 @@ const TrackOptions: React.FC<OptionsModalProps> = ({
   track,
 }) => {
   const [addToPlaylist, setAddToPlaylist] = useState(false);
+  const [showAlbumAndArtist, setShowAlbumAndArtist] = useState<boolean>(false);
+  const [albumOrArtist, setAlbumOrArtist] = useState<string>("");
   const [pictureData, setPictureData] = useState<string>();
   const [trackData, setTrackData] = useState<songMetaData>();
   const [isLikedToggled, setIsLikedToggled] = useState(false); // New state for tracking like toggle
@@ -94,6 +98,41 @@ const TrackOptions: React.FC<OptionsModalProps> = ({
     };
     getPictureData();
   }, [track]);
+
+  const addTrackToQueue = async () => {
+    try {
+      // const queue = await TrackPlayer.getQueue();
+      const currentTrackIndex = await TrackPlayer.getActiveTrackIndex();
+
+      if (
+        currentTrackIndex !== null &&
+        currentTrackIndex !== undefined &&
+        currentTrackIndex > -1
+      ) {
+        const trackQueue = {
+          id: trackData?.songId,
+          url: trackData?.uri,
+          title: trackData?.title,
+          artist: trackData?.artist,
+          artwork: trackData?.pictureData,
+        };
+        //@ts-ignore
+        await TrackPlayer.add(trackQueue, currentTrackIndex + 1);
+        console.log("Track added to queue at position:", currentTrackIndex + 1);
+        ToastAndroid.showWithGravity(
+          "Song Added to Queue",
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM
+        );
+      } else {
+        console.error("Current track index is invalid:", currentTrackIndex);
+      }
+    } catch (error) {
+      console.error("Error adding track to queue:", error);
+    } finally {
+      onClose();
+    }
+  };
 
   if (!track) return null;
 
@@ -190,7 +229,7 @@ const TrackOptions: React.FC<OptionsModalProps> = ({
 
                 <TouchableOpacity
                   className="py-2 mt-3"
-                  onPress={() => console.log("handle queue")}
+                  onPress={addTrackToQueue}
                 >
                   <View className="flex flex-row items-center pb-3 border-b border-gray-600">
                     <>
@@ -208,11 +247,36 @@ const TrackOptions: React.FC<OptionsModalProps> = ({
 
                 <TouchableOpacity
                   className="py-2 mt-3"
-                  onPress={() => console.log("Edit")}
+                  onPress={() => {
+                    setShowAlbumAndArtist(true);
+                    setAlbumOrArtist("album");
+                    // onClose();
+                  }}
                 >
                   <View className="flex flex-row items-center pb-3 border-b border-gray-600">
-                    <AntDesign name="edit" size={25} color="white" />
-                    <Text className="text-white text-base ml-3">Edit</Text>
+                    <MaterialCommunityIcons
+                      name="album"
+                      size={25}
+                      color="white"
+                    />
+                    <Text className="text-white text-base ml-3">
+                      View Album
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className="py-2 mt-3"
+                  onPress={() => {
+                    setShowAlbumAndArtist(true);
+                    setAlbumOrArtist("artist");
+                  }}
+                >
+                  <View className="flex flex-row items-center pb-3 border-b border-gray-600">
+                    <FontAwesome6 name="user-group" size={25} color="white" />
+                    <Text className="text-white text-base ml-3">
+                      View Artists
+                    </Text>
                   </View>
                 </TouchableOpacity>
               </View>
@@ -234,6 +298,14 @@ const TrackOptions: React.FC<OptionsModalProps> = ({
           onClose={() => setAddToPlaylist(false)}
           trackId={track.songId}
           // playlists={playlists}
+        />
+      )}
+      {showAlbumAndArtist && (
+        <ArtistAndAlbum
+          isVisible={showAlbumAndArtist}
+          onClose={() => setShowAlbumAndArtist(false)}
+          track={trackData}
+          type={albumOrArtist}
         />
       )}
     </Modal>

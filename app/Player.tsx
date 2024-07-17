@@ -222,7 +222,7 @@ const PlayerScreen: React.FC<PlayerScreenProps> = ({
                   />
                 </TouchableOpacity>
               </View>
-              <View className="w-[70%] ml-1 overflow-auto">
+              <View className="w-[70%] ml-1 overflow-auto pt-4">
                 <MovingText
                   text={
                     currentTrack?.title?.replace(".mp3", "") ||
